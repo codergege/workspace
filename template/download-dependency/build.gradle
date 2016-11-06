@@ -22,12 +22,9 @@ apply plugin: 'application'
 */
 sourceCompatibility = 1.8
 version = '1.0'
-// local lib dir
-ext.localLib = '/home/codergege/develop/open-source'
 
 // from application
-// mainClassName = "cn.codergege.main.Main"
-mainClassName = "cn.codergege.util.DbcpUtils"
+mainClassName = "cn.codergege.main.Main"
 
 jar {
     manifest {
@@ -46,12 +43,11 @@ repositories {
 }
 
 dependencies {//{{{
-    compile fileTree(dir:'lib', include:['*.jar'])
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.21'
     compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.7' 
     compile group: 'log4j', name: 'log4j', version: '1.2.17'
     //ojdbc6.jar 得从本地导入, maven 中没有好像
-    // compile group: 'com.oracle', name: 'ojdbc6', version: '11.1.0.7.0'
+    // compile group: 'com.oracle', name: 'ojdbc6', version: '11.1.0.7.0' 
     compile group: 'mysql', name: 'mysql-connector-java', version: '6.0.5'
     compile group: 'commons-dbcp', name: 'commons-dbcp', version: '1.4'
 
@@ -65,7 +61,7 @@ dependencies {//{{{
 //{{{
 /**
 * task: inits
-* 1) 建立 lib 目录, 构建 source sets 目录结构, 生成 cn.codergege.domain dao dao.impl, service,
+* 1) 构建 source sets 目录结构, 生成 cn.codergege.domain dao dao.impl, service,
 * service.impl, util, main 包结构. 还有 cn.codergege.groovy
 * 2) 生成 readme.txt 文件
 * 3) 
@@ -75,15 +71,13 @@ dependencies {//{{{
 */
 //}}}
 task inits {//{{{
-    def libDir = 'lib'
     def javaBase = 'src/main/java/cn/codergege'
     def groovyBase = 'src/main/groovy/cn/codergege/groovy'
     def javaResources = 'src/main/resources'
     def testBase = 'src/test/java/cn/codergege'
     def testGroovyBase = 'src/test/groovy/cn/codergege/groovy'
     def testResources = 'src/test/resources'
-    def srcList = ["$libDir",
-                    "$javaBase/domain",
+    def srcList = ["$javaBase/domain",
                     "$javaBase/dao", 
                     "$javaBase/dao/impl",
                     "$javaBase/service",
@@ -139,27 +133,11 @@ public class Main {
 }//}}}
 
 /**
-* task: copyLibs
-* desc:
-*   copy ojdbc6.jar ... 到 libs 
-*/
-task copyLib {
-    doLast {
-        copy {
-            from project.localLib
-            into 'lib'
-            include 'ojdbc6.jar'
-        }
-    }
-}
-
-/**
 * task: prepareDevEnv
-* dependsOn: copyLib
 * todo:
 * 1) copy resources from somedir
 */
-task prepareDevEnv(dependsOn:[copyLib]) {
+task prepareDevEnv {
     doLast {
         println "preparing development environment..."
     }
