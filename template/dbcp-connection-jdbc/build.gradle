@@ -15,6 +15,7 @@
 apply plugin: 'java'
 apply plugin: 'groovy'
 apply plugin: 'application'
+apply plugin: 'eclipse-wtp'
 
 
 /**
@@ -24,6 +25,7 @@ sourceCompatibility = 1.8
 version = '1.0'
 // local lib dir
 ext.localLib = '/home/codergege/develop/open-source'
+ext.configDir = '/home/codergege/workspace/config'
 
 // from application
 // mainClassName = "cn.codergege.main.Main"
@@ -79,6 +81,7 @@ task inits {//{{{
     def javaBase = 'src/main/java/cn/codergege'
     def groovyBase = 'src/main/groovy/cn/codergege/groovy'
     def javaResources = 'src/main/resources'
+    def sqlDir = 'src/main/resources/sql'
     def testBase = 'src/test/java/cn/codergege'
     def testGroovyBase = 'src/test/groovy/cn/codergege/groovy'
     def testResources = 'src/test/resources'
@@ -91,6 +94,7 @@ task inits {//{{{
                     "$javaBase/util",
                     "$javaBase/main",
                     "$javaResources",
+                    "$sqlDir",
                     "$testBase/domain",
                     "$testBase/dao", 
                     "$testBase/dao/impl",
@@ -141,7 +145,7 @@ public class Main {
 /**
 * task: copyLibs
 * desc:
-*   copy ojdbc6.jar ... 到 libs 
+*   copy .../develop/open-source/ojdbc6.jar ... 到 libs 
 */
 task copyLib {
     doLast {
@@ -154,12 +158,27 @@ task copyLib {
 }
 
 /**
+* task: copySqlFile
+* desc:
+*   copy .../workspace/config/sql/mysql_demo.sql 到 src/main/resources/sql
+*/
+task copySqlFile {
+    doLast {
+        copy {
+            from project.configDir
+            into 'src/main/resources/sql'
+            include 'sql/mysql_demo.sql'
+        }
+    }
+}
+
+/**
 * task: prepareDevEnv
 * dependsOn: copyLib
 * todo:
 * 1) copy resources from somedir
 */
-task prepareDevEnv(dependsOn:[copyLib]) {
+task prepare(dependsOn:[copySqlFile, copyLib, 'eclipse']) {
     doLast {
         println "preparing development environment..."
     }
