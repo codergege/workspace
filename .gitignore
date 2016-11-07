@@ -4,6 +4,8 @@ build/
 .metadata/
 .classpath
 .project
+.recommenders
+RemoteSystemsTempFiles
 # 忽略所有 calss, jar, zip, 7z, tar, log, part
 *.class
 *.jar
