@@ -1,9 +1,12 @@
 # 只忽略 build 目录, 不忽略 build 文件
 build/
 # 忽略 .metadata, .classpath, .project
+resources/
 .metadata/
 .classpath
 .project
+.gradle/
+gradle/
 .settings/
 .recommenders
 RemoteSystemsTempFiles
