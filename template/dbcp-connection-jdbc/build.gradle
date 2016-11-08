@@ -9,6 +9,7 @@
 * To Do:
 * - 考虑使用 sfl4j + logback 的日志框架, 并加入工程.
 * - 封装 jdbc 操作数据库的方式, 就像 SpringJdbcTemplate 那样.
+* - 加入 junit4 test code
 *
 */
 //}}}
@@ -17,15 +18,19 @@ apply plugin: 'groovy'
 apply plugin: 'application'
 apply plugin: 'eclipse-wtp'
 
-
 /**
 * customizing
 */
 sourceCompatibility = 1.8
 version = '1.0'
-// local lib dir
-ext.localLib = '/home/codergege/develop/open-source'
-ext.configDir = '/home/codergege/workspace/config'
+// local lib dir, 用于复制 oracle, java 驱动
+ext.localLib = '/home/codergege/nutstore/open-source'
+// 配置文件
+ext.configDir = '/home/codergege/nutstore/config'
+// 保存用到的依赖类库
+ext.workspaceLib = '/home/codergege/workspace/open-source'
+// root_project/lib
+ext.projectLib = file('lib')
 
 // from application
 // mainClassName = "cn.codergege.main.Main"
@@ -47,16 +52,27 @@ repositories {
     }
 }
 
+// define dependency version
+ext.springVersion = '4.3.3.RELEASE'
+
 dependencies {//{{{
+    // - 本地依赖, ojdbc6.jar
     compile fileTree(dir:'lib', include:['*.jar'])
+
+    // - 日志
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.21'
     compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.7' 
     compile group: 'log4j', name: 'log4j', version: '1.2.17'
-    //ojdbc6.jar 得从本地导入, maven 中没有好像
-    // compile group: 'com.oracle', name: 'ojdbc6', version: '11.1.0.7.0'
+
+    // - 数据库
     compile group: 'mysql', name: 'mysql-connector-java', version: '6.0.5'
     compile group: 'commons-dbcp', name: 'commons-dbcp', version: '1.4'
 
+    // - util
+    compile group: 'commons-lang', name: 'commons-lang', version: '2.6'
+    compile group: 'commons-io', name: 'commons-io', version: '2.5'
+
+    // 测试
     testCompile 'junit:junit:4.12'
 }//}}}
 
@@ -68,7 +84,7 @@ dependencies {//{{{
 /**
 * task: inits
 * 1) 建立 lib 目录, 构建 source sets 目录结构, 生成 cn.codergege.domain dao dao.impl, service,
-* service.impl, util, main 包结构. 还有 cn.codergege.groovy
+* service.impl, util, main 包结构. 
 * 2) 生成 readme.txt 文件
 * 3) 
 * todo: 
@@ -79,11 +95,11 @@ dependencies {//{{{
 task inits {//{{{
     def libDir = 'lib'
     def javaBase = 'src/main/java/cn/codergege'
-    def groovyBase = 'src/main/groovy/cn/codergege/groovy'
+    // def groovyBase = 'src/main/groovy/cn/codergege/groovy'
     def javaResources = 'src/main/resources'
     def sqlDir = 'src/main/resources/sql'
     def testBase = 'src/test/java/cn/codergege'
-    def testGroovyBase = 'src/test/groovy/cn/codergege/groovy'
+    // def testGroovyBase = 'src/test/groovy/cn/codergege/groovy'
     def testResources = 'src/test/resources'
     def srcList = ["$libDir",
                     "$javaBase/domain",
@@ -101,9 +117,7 @@ task inits {//{{{
                     "$testBase/service",
                     "$testBase/service/impl",
                     "$testBase/util",
-                    "$testResources",
-                    "$groovyBase",
-                    "$testGroovyBase"];
+                    "$testResources"];
 
     // 1) 构建 source sets 目录
     doLast {
@@ -145,14 +159,17 @@ public class Main {
 /**
 * task: copyLibs
 * desc:
-*   copy .../develop/open-source/ojdbc6.jar ... 到 libs 
+*   copy project.localLib/ojdbc6.jar ... 到 lib 
+*   用于本地依赖
+*   
 */
 task copyLib {
     doLast {
         copy {
             from project.localLib
-            into 'lib'
+            into project.projectLib
             include 'ojdbc6.jar'
+            include "*mysql-connector-java*.jar"
         }
     }
 }
@@ -160,7 +177,7 @@ task copyLib {
 /**
 * task: copySqlFile
 * desc:
-*   copy .../workspace/config/sql/mysql_demo.sql 到 src/main/resources/sql
+*   copy project.configDir 到 src/main/resources/sql
 */
 task copySqlFile {
     doLast {
@@ -178,8 +195,9 @@ task copySqlFile {
 * todo:
 * 1) copy resources from somedir
 */
-task prepare(dependsOn:[copySqlFile, copyLib, 'eclipse']) {
+task prepare(dependsOn:[copyLib, copySqlFile, 'eclipse']) {
     doLast {
-        println "preparing development environment..."
+        println "preparing development environment complete."
     }
 }
+
