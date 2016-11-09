@@ -96,7 +96,7 @@ task inits {//{{{
     def libDir = 'lib'
     def javaBase = 'src/main/java/cn/codergege'
     // def groovyBase = 'src/main/groovy/cn/codergege/groovy'
-    def javaResources = 'src/main/resources'
+    ext.javaResources = 'src/main/resources'
     def sqlDir = 'src/main/resources/sql'
     def testBase = 'src/test/java/cn/codergege'
     // def testGroovyBase = 'src/test/groovy/cn/codergege/groovy'
@@ -183,8 +183,18 @@ task copySqlFile {
     doLast {
         copy {
             from project.configDir
-            into 'src/main/resources/sql'
+            into inits.javaResources
             include 'sql/mysql_demo.sql'
+        }
+    }
+}
+
+task copyConfig {
+    doLast {
+        copy {
+            from project.configDir + '/dbcp-connection-jdbc'
+            into inits.javaResources
+            include 'dbcp.properties'
         }
     }
 }
@@ -195,7 +205,7 @@ task copySqlFile {
 * todo:
 * 1) copy resources from somedir
 */
-task prepare(dependsOn:[copyLib, copySqlFile, 'eclipse']) {
+task prepare(dependsOn:[copyLib, copySqlFile, copyConfig,  'eclipse']) {
     doLast {
         println "preparing development environment complete."
     }
