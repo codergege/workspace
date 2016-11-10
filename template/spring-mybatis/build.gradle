@@ -46,12 +46,13 @@ ext.projectLib = file('lib')
 //}}}
 // property from application
 // to change: main class
-mainClassName = "cn.codergege.main.Main"
+mainClassName = "cn.codergege.packagename.main.Main"
 
 jar {//{{{
     manifest {
         attributes 'Implementation-Title': project.name,
-                    'Implementation-Version': version
+                    'Implementation-Version': version,
+                    'Trusted-Library': true
     }
 }//}}}
 
@@ -105,7 +106,6 @@ dependencies {//{{{
     compile group: 'org.springframework', name: 'spring-aspects', version: project.springVersion
     compile group: 'org.springframework', name: 'spring-jdbc', version: project.springVersion
     compile group: 'org.springframework', name: 'spring-tx', version: project.springVersion
-
 
     // 测试
     testCompile 'junit:junit:4.12'
