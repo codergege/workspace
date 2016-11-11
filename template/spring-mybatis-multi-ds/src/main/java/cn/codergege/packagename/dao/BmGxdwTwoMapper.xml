@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.codergege.packagename.dao.BmGxdwTwoMapper">
+  <resultMap id="BaseResultMap" type="cn.codergege.packagename.model.BmGxdwTwo">
+    <id column="CODE" jdbcType="VARCHAR" property="code" />
+    <result column="CONTENT" jdbcType="VARCHAR" property="content" />
+    <result column="SJCODE" jdbcType="VARCHAR" property="sjcode" />
+    <result column="LV" jdbcType="VARCHAR" property="lv" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    CODE, CONTENT, SJCODE, LV
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from BASE.BM_GXDW
+    where CODE = #{code,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from BASE.BM_GXDW
+    where CODE = #{code,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="cn.codergege.packagename.model.BmGxdwTwo">
+    insert into BASE.BM_GXDW (CODE, CONTENT, SJCODE, 
+      LV)
+    values (#{code,jdbcType=VARCHAR}, #{content,jdbcType=VARCHAR}, #{sjcode,jdbcType=VARCHAR}, 
+      #{lv,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="cn.codergege.packagename.model.BmGxdwTwo">
+    insert into BASE.BM_GXDW
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="code != null">
+        CODE,
+      </if>
+      <if test="content != null">
+        CONTENT,
+      </if>
+      <if test="sjcode != null">
+        SJCODE,
+      </if>
+      <if test="lv != null">
+        LV,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="code != null">
+        #{code,jdbcType=VARCHAR},
+      </if>
+      <if test="content != null">
+        #{content,jdbcType=VARCHAR},
+      </if>
+      <if test="sjcode != null">
+        #{sjcode,jdbcType=VARCHAR},
+      </if>
+      <if test="lv != null">
+        #{lv,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="cn.codergege.packagename.model.BmGxdwTwo">
+    update BASE.BM_GXDW
+    <set>
+      <if test="content != null">
+        CONTENT = #{content,jdbcType=VARCHAR},
+      </if>
+      <if test="sjcode != null">
+        SJCODE = #{sjcode,jdbcType=VARCHAR},
+      </if>
+      <if test="lv != null">
+        LV = #{lv,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where CODE = #{code,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="cn.codergege.packagename.model.BmGxdwTwo">
+    update BASE.BM_GXDW
+    set CONTENT = #{content,jdbcType=VARCHAR},
+      SJCODE = #{sjcode,jdbcType=VARCHAR},
+      LV = #{lv,jdbcType=VARCHAR}
+    where CODE = #{code,jdbcType=VARCHAR}
+  </update>
+</mapper>
