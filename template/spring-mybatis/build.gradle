@@ -17,6 +17,13 @@
 * - gradle prepare 后 config.properties, generatorConfig.xml 表
 *
 * Usage:
+* 使用方式一, 复制整个项目.
+* 保留 src, lib, build.gradle, 其余全部删除.
+* mv build.gradle ../; gradle init; mv ../build.gradle .;
+* 手动修改包名, 最好使用 eclipse 重构.
+*
+* 使用方式二, 只复制 build.gradle 文件的方式:
+* 不推荐, 这样 java 源码就没有了
 * gradle init 后, 复制该模板进工程
 * 修改 packagename, dependency 等需要修改的地方
 * gradle inits 生成 src 目录
@@ -51,7 +58,6 @@ ext.pkgname = 'pkgname'
 mainClassName = "cn.codergege.${project.pkgname}.main.Main"
 
 processResources {
-
 	// 包含 xml 文件
 	from('src/main/java') {
 		include '**/*.xml'
@@ -140,10 +146,10 @@ dependencies {//{{{
 task inits {//{{{
     def packagename = 'packagename'
     def libDir = 'lib'
-    def javaBase = "src/main/java/cn/codergege/$packagename"
+    ext.javaBase = "src/main/java/cn/codergege/$packagename"
     ext.javaResources = 'src/main/resources'
     def sqlDir = "src/main/resources/sql"
-    def testBase = "src/test/java/cn/codergege/$packagename"
+    ext.testBase = "src/test/java/cn/codergege/$packagename"
     def testResources = "src/test/resources"
     ext.srcList = ["$libDir",
                     "$javaBase/model",
@@ -297,22 +303,6 @@ task prepare(dependsOn:[copyLib, copySqlFile, copyConfig,  'eclipse']) {
     }
 }
 
-/**
-* task: rename
-* desc:
-*	重命名包名.
-*/
-task rename(type: Copy) {
-    from 'src'
-    into 'src'
-    // Use a closure to map the file name
-    rename { String fileName ->
-        fileName.replace('packagename', project.pkgname)
-    }
-    // Use a regular expression to map the file name
-    // rename '(.+)-staging-(.+)', '$1$2'
-    // rename(/(.+)-staging-(.+)/, '$1$2')
-}
 
 /**
 * task: runGenerator

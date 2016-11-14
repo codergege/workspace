@@ -11,6 +11,7 @@ gradle/
 .recommenders
 RemoteSystemsTempFiles
 bin/
+jquery-easyui-1.5/
 # 忽略所有 calss, jar, zip, 7z, tar, log, part
 *.class
 *.jar
