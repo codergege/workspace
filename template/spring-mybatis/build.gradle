@@ -1,38 +1,3 @@
-//{{{
-/**
-* 模板工程: spring + mybatis
-* - xml 方式配置
-* - c3p0 连接池
-* - 单数据源配置
-* - spring 事务管理 
-* - mybatis generator
-* 
-* To Do:
-* - sql/oracle_demo.sql
-* - 考虑使用 sfl4j + logback 的日志框架, 并加入工程.
-* - 加入 junit4 test code
-*
-* 复制模板工程后需要修改的地方:
-* - packagename
-* - gradle prepare 后 config.properties, generatorConfig.xml 表
-*
-* Usage:
-* 使用方式一, 复制整个项目.
-* 保留 src, lib, build.gradle, 其余全部删除.
-* mv build.gradle ../; gradle init; mv ../build.gradle .;
-* 手动修改包名, 最好使用 eclipse 重构.
-*
-* 使用方式二, 只复制 build.gradle 文件的方式:
-* 不推荐, 这样 java 源码就没有了
-* gradle init 后, 复制该模板进工程
-* 修改 packagename, dependency 等需要修改的地方
-* gradle inits 生成 src 目录
-* gradle prepare 复制依赖 jar 到 project/lib, 复制 config files
-* gradle bGenerator 使用 mybatis generator, 使用 5.1.6.jar 的 mysql 驱动,
-* 否则无法正确获取主键.
-*/
-//}}}
-
 apply plugin: 'java'
 apply plugin: 'groovy'
 apply plugin: 'application'
@@ -41,28 +6,23 @@ apply plugin: 'eclipse-wtp'
 /**
 * customizing
 */
-sourceCompatibility = 1.8//{{{
+sourceCompatibility = 1.8
 version = '1.0'
-// local lib dir, 用于复制 oracle, java 驱动
-ext.localLib = '/home/codergege/nutstore/open-source'
-// 配置文件
-ext.configDir = '/home/codergege/nutstore/config'
-// 保存用到的依赖类库
-ext.workspaceLib = '/home/codergege/workspace/open-source'
-// root_project/lib
-ext.projectLib = file('lib')
-//}}}
-// property from application
-// to change: main class
-ext.pkgname = 'pkgname'
+ext {//{{{
+	pkgname = 'packagename'
+	javaResources = 'src/main/resources'
+	// define dependency version
+	springVersion = '4.3.3.RELEASE'
+	logbackVersion = '1.1.7'
+}//}}}
 mainClassName = "cn.codergege.${project.pkgname}.main.Main"
 
-processResources {
+processResources {//{{{
 	// 包含 xml 文件
 	from('src/main/java') {
 		include '**/*.xml'
 	}
-}
+}//}}}
 
 jar {//{{{
     manifest {
@@ -75,17 +35,16 @@ jar {//{{{
 /**
 * dependency management
 */
-repositories {
+repositories {//{{{
     maven {
         url "http://maven.aliyun.com/nexus/content/groups/public/"
     }
     maven {
         url "https://plugins.gradle.org/m2/"
     }
-}
+}//}}}
 
-// define dependency version
-ext.springVersion = '4.3.3.RELEASE'
+[compileJava, compileTestJava, javadoc]*.options*.encoding = "UTF-8"  
 
 dependencies {//{{{
     // - 本地依赖, ojdbc6.jar
@@ -93,8 +52,9 @@ dependencies {//{{{
 
     // - 日志
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.21'
-    compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.7' 
-    compile group: 'log4j', name: 'log4j', version: '1.2.17'
+    compile group: 'ch.qos.logback', name: 'logback-classic', version: project.logbackVersion
+	compile group: 'ch.qos.logback', name: 'logback-core', version: project.logbackVersion
+	compile group: 'ch.qos.logback', name: 'logback-access', version: project.logbackVersion
 
     // - 数据库
     // compile group: 'mysql', name: 'mysql-connector-java', version: '6.0.5'
@@ -128,188 +88,11 @@ dependencies {//{{{
 }//}}}
 
 /**
-* Tasts
-/
-//{{{
-/**
-* task: inits
-* 1) 建立 lib 目录, 构建 source sets 目录结构, 生成 cn.codergege.packagename.domain dao dao.impl, service,
-* service.impl, util, main 包结构. 
-* 2) 生成 readme.txt 文件
-* 3) 
-* todo: 
-* 1) 调用 gradle init 任务.
-* 2) readme 模板, 时间, author.
-*/
-//}}}
-// to change: packagename
-task inits {//{{{
-    def packagename = 'packagename'
-    def libDir = 'lib'
-    ext.javaBase = "src/main/java/cn/codergege/$packagename"
-    ext.javaResources = 'src/main/resources'
-    def sqlDir = "src/main/resources/sql"
-    ext.testBase = "src/test/java/cn/codergege/$packagename"
-    def testResources = "src/test/resources"
-    ext.srcList = ["$libDir",
-                    "$javaBase/model",
-                    "$javaBase/dao", 
-                    "$javaBase/dao/impl",
-                    "$javaBase/service",
-                    "$javaBase/service/impl",
-                    "$javaBase/util",
-                    "$javaBase/main",
-                    "$javaResources",
-                    "$sqlDir",
-                    "$testBase/model",
-                    "$testBase/dao", 
-                    "$testBase/dao/impl",
-                    "$testBase/service",
-                    "$testBase/service/impl",
-                    "$testBase/util",
-                    "$testResources"];
-
-    // 1) 构建 source sets 目录
-    doLast {
-        srcList.each {
-            mkdir(it)
-        } 
-    }
-
-    // 2) 生成 readme.txt
-    doLast {
-        new File('readme.txt').write(
-"""# README
-        
-""")
-    }
-
-    // 3) 生成 Main
-    //{{{
-/*     doLast {//{{{
- *         new File("$javaBase/main/Main.java").write(
- * """package cn.codergege.packagename.main;
- *
- * public class Main {
- *
- *     public static void main(String[] args) {
- *
- *         System.out.println("Hello!");
- *
- *     }
- * }
- * """)
- *    }//}}} */
-    //}}}
-
-	// 4) 将 generator 需要的 jar 包复制到 lib/autogen 下面.
-    doLast {
-        copy {
-            from project.workspaceLib
-            into 'lib/autogen'
-            include "mysql-connector-java-5.1.6.jar"
-			include "mybatis-generator-core-1.3.5.jar"
-        }
-    }
-                    
-}//}}}
-//{{{
-/**
-* task: cleanInits
-* desc:
-*   删除 inits 生成的 files
-*/ 
-//}}}
-task cleanInits {//{{{
-    doLast {
-       delete(inits.srcList) 
-       delete('readme.txt')
-       println "清除 inits 完毕..."
-    }
-}//}}}
-//{{{
-/**
-* task: copyLibs
-* desc:
-*   copy project.localLib/ojdbc6.jar ... 到 lib 
-*   用于本地依赖
-*   
-*/
-//}}}
-task copyLib {//{{{
-    doLast {
-        copy {
-            from project.localLib
-            into project.projectLib
-            include 'ojdbc6.jar'
-        }
-    }
-    doLast {
-        copy {
-            from project.localLib
-            into 'lib/autogen'
-            include "mysql-connector-java-5.1.6.jar"
-			include "mybatis-generator-core-1.3.5.jar"
-        }
-    }
-}//}}}
-//{{{
-/**
-* task: copySqlFile
-* desc:
-*   copy project.configDir 到 src/main/resources/sql
-*/
-//}}}
-task copySqlFile {//{{{
-    doLast {
-        copy {
-            from project.configDir
-            into inits.javaResources
-            include 'sql/mysql_demo.sql'
-        }
-    }
-}//}}}
-//{{{
-/**
-* task: copyConfig
-* desc:
-*   copy config/config.properties, config/generatorConfig.xml,
-*   mybatis.xml, spring.xml, spring-mybatis.xml
-*/
-//}}}
-task copyConfig {//{{{
-    doLast {
-        copy {
-            from project.configDir + '/spring-mybatis'
-            into inits.javaResources
-            include 'generatorConfig.xml'
-            include 'config.properties'
-            include 'mybatis.xml'
-            include 'spring.xml'
-            include 'spring-mybatis.xml'
-        }
-    }
-}//}}}
-
-/**
-* task: prepare
-* dependsOn: copyLib, copySqlFile, copyConfig, 'eclipse'
-* desc:
-* 1) copy resources from somedir
-*/
-task prepare(dependsOn:[copyLib, copySqlFile, copyConfig,  'eclipse']) {
-    doLast {
-        println "preparing development environment complete."
-    }
-}
-
-
-/**
 * task: runGenerator
 * desc:
 *   运行 mybatis generator
 */
-task runGenerator(type: JavaExec, dependsOn:[processResources]) {
+task runGenerator(type: JavaExec, dependsOn:[processResources]) {//{{{
 	// 不要用 rumtimeClasspath, 不然其他 java 源文件有编译错误就停止了.
 	// classpath = sourceSets.main.runtimeClasspath
 	
@@ -319,5 +102,5 @@ task runGenerator(type: JavaExec, dependsOn:[processResources]) {
 	main = 'org.mybatis.generator.api.ShellRunner'
 
 	// arguments to pass to the application
-	args '-configfile', inits.javaResources + '/generatorConfig.xml', '-overwrite',  '-verbose'
-}
+	args '-configfile', project.javaResources + '/generatorConfig.xml', '-overwrite',  '-verbose'
+}//}}}

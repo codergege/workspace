@@ -1,5 +1,7 @@
 package cn.codergege.packagename.main;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -7,7 +9,7 @@ import cn.codergege.packagename.service.QueryService;
 import cn.codergege.packagename.util.DataSourceContextHolder;
 
 public class Main {
-
+	final static Logger log = LoggerFactory.getLogger(Main.class);
     public static void main(String[] args) {
 
     	ConfigurableApplicationContext ctx = 
@@ -28,6 +30,7 @@ public class Main {
     	DataSourceContextHolder.setDataSourceType(
     			DataSourceContextHolder.DATASOURCE_TWO);
 
+    	log.info("test log info");
     	QueryService queryService = (QueryService) ctx.getBean("queryService");
     	queryService.print();
     	

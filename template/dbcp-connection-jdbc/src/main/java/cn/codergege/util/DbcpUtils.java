@@ -9,8 +9,11 @@ import java.util.Properties;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.dbcp.BasicDataSourceFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DbcpUtils {
+	final static Logger log = LoggerFactory.getLogger(DbcpUtils.class);
 	private static BasicDataSource ds;
 	
 	static{
@@ -63,6 +66,7 @@ public class DbcpUtils {
 	}
 	
 	public static void main(String[] args) {
+		log.info("test log info");
 		try {
 			System.out.println(getGsConnection());
 		} catch (SQLException e) {

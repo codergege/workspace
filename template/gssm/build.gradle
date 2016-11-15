@@ -1,29 +1,3 @@
-//{{{
-/**
-* 模板工程: gradle + spring + springmvc + mybatis
-* - xml 方式配置
-* - c3p0 连接池
-* - 多数据源配置
-* - spring 事务管理 ?
-* - mybatis generator
-* 
-* To Do:
-* - sql/oracle_demo.sql
-* - 考虑使用 sfl4j + logback 的日志框架, 并加入工程.
-* - 加入 junit4 test code
-*
-* 复制模板工程后需要修改的地方:
-* - packagename
-* - gradle prepare 后 config.properties, generatorConfig.xml 表
-*
-* Usage:
-* 使用方式一, 复制整个项目.
-* 保留 src, lib, build.gradle, 其余全部删除.
-* mv build.gradle ../; gradle init; mv ../build.gradle .;
-* 手动修改包名, 最好使用 eclipse 重构.
-*/ 
-//}}}
-
 buildscript {//{{{
   repositories {
     maven {
@@ -59,7 +33,7 @@ apply plugin: 'org.akhikhl.gretty'
 /**
 * customizing
 */
-sourceCompatibility = 1.8//{{{
+sourceCompatibility = 1.8
 
 processResources {//{{{
 	// 包含 xml 文件
@@ -81,9 +55,13 @@ repositories {//{{{
     }
 }//}}}
 
+[compileJava, compileTestJava, javadoc]*.options*.encoding = "UTF-8"  
+
+
 ext {//{{{
 	// define dependency version
 	springVersion = '4.3.3.RELEASE'
+	logbackVersion = '1.1.7'
 	javaResources = 'src/main/resources'
 }//}}}
 
@@ -93,8 +71,9 @@ dependencies {//{{{
 
     // - 日志
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.21'
-    compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.7' 
-    compile group: 'log4j', name: 'log4j', version: '1.2.17'
+    compile group: 'ch.qos.logback', name: 'logback-classic', version: project.logbackVersion
+	compile group: 'ch.qos.logback', name: 'logback-core', version: project.logbackVersion
+	compile group: 'ch.qos.logback', name: 'logback-access', version: project.logbackVersion
 
     // - 数据库
     // compile group: 'mysql', name: 'mysql-connector-java', version: '6.0.5'
@@ -127,6 +106,7 @@ dependencies {//{{{
     compile group: 'org.springframework', name: 'spring-webmvc', version: project.springVersion
     compile group: 'org.springframework', name: 'spring-expression', version: project.springVersion
 
+	compile group: 'taglibs', name: 'standard', version: '1.1.2'
     providedCompile group: 'javax.servlet.jsp.jstl', name: 'jstl-api', version: '1.2'
     providedCompile group: 'javax.servlet', name: 'javax.servlet-api', version: '3.1.0'
     providedCompile group: 'javax.servlet.jsp', name: 'jsp-api', version: '2.2'
@@ -141,7 +121,6 @@ dependencies {//{{{
     // 测试
     testCompile 'junit:junit:4.12'
 }//}}}
-
 
 /**
 * task: runGenerator
@@ -172,4 +151,4 @@ task runTwo(type: JavaExec, dependsOn:[processResources]) {//{{{
 
 	// arguments to pass to the application
 	args '-configfile', project.javaResources + '/generatorConfigTwo.xml', '-overwrite',  '-verbose'
-}//}}}
+}

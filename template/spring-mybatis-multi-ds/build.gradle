@@ -54,7 +54,13 @@ ext.projectLib = file('lib')
 //}}}
 // property from application
 // to change: main class
-ext.pkgname = 'packagename'
+ext {//{{{
+	javaResources = 'src/main/resources'
+	pkgname = 'packagename'
+	// define dependency version
+	springVersion = '4.3.3.RELEASE'
+	logbackVersion = '1.1.7'
+}//}}}
 mainClassName = "cn.codergege.${project.pkgname}.main.Main"
 
 processResources {//{{{
@@ -76,17 +82,14 @@ jar {//{{{
 /**
 * dependency management
 */
-repositories {
+repositories {//{{{
     maven {
         url "http://maven.aliyun.com/nexus/content/groups/public/"
     }
     maven {
         url "https://plugins.gradle.org/m2/"
     }
-}
-
-// define dependency version
-ext.springVersion = '4.3.3.RELEASE'
+}//}}}
 
 dependencies {//{{{
     // - 本地依赖, ojdbc6.jar
@@ -94,8 +97,9 @@ dependencies {//{{{
 
     // - 日志
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.21'
-    compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.7' 
-    compile group: 'log4j', name: 'log4j', version: '1.2.17'
+    compile group: 'ch.qos.logback', name: 'logback-classic', version: project.logbackVersion
+	compile group: 'ch.qos.logback', name: 'logback-core', version: project.logbackVersion
+	compile group: 'ch.qos.logback', name: 'logback-access', version: project.logbackVersion
 
     // - 数据库
     // compile group: 'mysql', name: 'mysql-connector-java', version: '6.0.5'
@@ -129,184 +133,6 @@ dependencies {//{{{
 }//}}}
 
 /**
-* Tasts
-/
-//{{{
-/**
-* task: inits
-* 1) 建立 lib 目录, 构建 source sets 目录结构, 生成 cn.codergege.packagename.domain dao dao.impl, service,
-* service.impl, util, main 包结构. 
-* 2) 生成 readme.txt 文件
-* 3) 
-* todo: 
-* 1) 调用 gradle init 任务.
-* 2) readme 模板, 时间, author.
-*/
-//}}}
-// to change: packagename
-task inits {//{{{
-    def packagename = 'packagename'
-    def libDir = 'lib'
-    def javaBase = "src/main/java/cn/codergege/$packagename"
-    ext.javaResources = 'src/main/resources'
-    def sqlDir = "src/main/resources/sql"
-    def testBase = "src/test/java/cn/codergege/$packagename"
-    def testResources = "src/test/resources"
-    ext.srcList = ["$libDir",
-                    "$javaBase/model",
-                    "$javaBase/dao", 
-                    "$javaBase/dao/impl",
-                    "$javaBase/service",
-                    "$javaBase/service/impl",
-                    "$javaBase/util",
-                    "$javaBase/main",
-                    "$javaResources",
-                    "$sqlDir",
-                    "$testBase/model",
-                    "$testBase/dao", 
-                    "$testBase/dao/impl",
-                    "$testBase/service",
-                    "$testBase/service/impl",
-                    "$testBase/util",
-                    "$testResources"];
-
-    // 1) 构建 source sets 目录
-    doLast {
-        srcList.each {
-            mkdir(it)
-        } 
-    }
-
-    // 2) 生成 readme.txt
-    doLast {
-        new File('readme.txt').write(
-"""# README
-        
-""")
-    }
-
-    // 3) 生成 Main
-    //{{{
-    doLast {
-        new File("$javaBase/main/Main.java").write(
-"""package cn.codergege.packagename.main;
-
-public class Main {
-
-    public static void main(String[] args) {
-
-        System.out.println("Hello!");
-
-    }
-}
-""")
-   }
-    //}}}
-                    
-}//}}}
-//{{{
-/**
-* task: cleanInits
-* desc:
-*   删除 inits 生成的 files
-*/ 
-//}}}
-task cleanInits {//{{{
-    doLast {
-       delete(inits.srcList) 
-       delete('readme.txt')
-       println "清除 inits 完毕..."
-    }
-}//}}}
-//{{{
-/**
-* task: copyLibs
-* desc:
-*   copy project.localLib/ojdbc6.jar ... 到 lib 
-*   用于本地依赖
-*   
-*/
-//}}}
-task copyLib {//{{{
-    doLast {
-        copy {
-            from project.localLib
-            into project.projectLib
-            include 'ojdbc6.jar'
-        }
-    }
-    doLast {
-        copy {
-            from project.localLib
-            into 'lib/autogen'
-            include "mysql-connector-java-5.1.6.jar"
-			include "mybatis-generator-core-1.3.5.jar"
-            include 'ojdbc6.jar'
-        }
-    }
-}//}}}
-//{{{
-/**
-* task: copySqlFile
-* desc:
-*   copy project.configDir 到 src/main/resources/sql
-*/
-//}}}
-task copySqlFile {//{{{
-    doLast {
-        copy {
-            from project.configDir
-            into inits.javaResources
-            include 'sql/mysql_demo.sql'
-        }
-    }
-}//}}}
-//{{{
-/**
-* task: copyConfig
-* desc:
-*   copy config/config.properties, config/generatorConfig.xml,
-*   mybatis.xml, spring.xml, spring-mybatis.xml
-*/
-//}}}
-task copyConfig {//{{{
-    doLast {
-        copy {
-            from project.configDir + '/spring-mybatis'
-            into inits.javaResources
-            include 'generatorConfig.xml'
-            include 'config.properties'
-            include 'mybatis.xml'
-            include 'spring.xml'
-            include 'spring-mybatis.xml'
-        }
-    }
-}//}}}
-
-/**
-* task: prepare
-* dependsOn: copyLib, copySqlFile, copyConfig, 'eclipse'
-* todo:
-* 1) copy resources from somedir
-*/
-task prepare(dependsOn:[copyLib, copySqlFile, copyConfig,  'eclipse']) {
-    doLast {
-        println "preparing development environment complete."
-    }
-}
-
-
-/**
-* task: rename
-* desc:
-*	重命名包名.
-*/
-task rename(type: Exec) {
-	commandLine "mv $inits.javaBase src/main/java/cn/codergege/$project.pkgname"
-	commandLine "mv $inits.testBase src/test/java/cn/codergege/$project.pkgname"
-}
-
-/**
 * task: runGenerator
 * desc:
 *   运行 mybatis generator
@@ -321,7 +147,7 @@ task runOne(type: JavaExec, dependsOn:[processResources]) {//{{{
 	main = 'org.mybatis.generator.api.ShellRunner'
 
 	// arguments to pass to the application
-	args '-configfile', inits.javaResources + '/generatorConfigOne.xml', '-overwrite',  '-verbose'
+	args '-configfile', project.javaResources + '/generatorConfigOne.xml', '-overwrite',  '-verbose'
 }//}}}
 
 task runTwo(type: JavaExec, dependsOn:[processResources]) {//{{{
@@ -334,5 +160,5 @@ task runTwo(type: JavaExec, dependsOn:[processResources]) {//{{{
 	main = 'org.mybatis.generator.api.ShellRunner'
 
 	// arguments to pass to the application
-	args '-configfile', inits.javaResources + '/generatorConfigTwo.xml', '-overwrite',  '-verbose'
+	args '-configfile', project.javaResources + '/generatorConfigTwo.xml', '-overwrite',  '-verbose'
 }//}}}

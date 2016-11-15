@@ -8,8 +8,14 @@ apply plugin: 'eclipse-wtp'
 */
 sourceCompatibility = 1.8
 version = '1.0'
+ext {//{{{
+	// define dependency version
+	pkgname = 'packagename'
+	javaResources = 'src/main/resources'
+	springVersion = '4.3.3.RELEASE'
+	logbackVersion = '1.1.7'
+}//}}}
 
-ext.pkgname = 'pkgname'
 mainClassName = "cn.codergege.${project.pkgname}.main.Main"
 
 processResources {//{{{
@@ -39,8 +45,7 @@ repositories {//{{{
     }
 }//}}}
 
-// define dependency version
-ext.springVersion = '4.3.3.RELEASE'
+[compileJava, compileTestJava, javadoc]*.options*.encoding = "UTF-8"  
 
 dependencies {//{{{
     // - 本地依赖, ojdbc6.jar
@@ -48,8 +53,9 @@ dependencies {//{{{
 
     // - 日志
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.21'
-    compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.7' 
-    compile group: 'log4j', name: 'log4j', version: '1.2.17'
+    compile group: 'ch.qos.logback', name: 'logback-classic', version: project.logbackVersion
+	compile group: 'ch.qos.logback', name: 'logback-core', version: project.logbackVersion
+	compile group: 'ch.qos.logback', name: 'logback-access', version: project.logbackVersion
 
     // - 数据库
     // compile group: 'mysql', name: 'mysql-connector-java', version: '6.0.5'

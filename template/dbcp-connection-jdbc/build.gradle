@@ -1,18 +1,3 @@
-//{{{
-/**
-* jdbc 链接 oracle/mysql 数据库模板工程
-* - dbcp 连接池连接 oracle/mysql 数据库的 DbUtils 类, db.properties 文件.
-* - 提供 java jdbc 读写 oracle 的 dao 模板.
-* - 集成 groovy, 有些功能 java 实现麻烦的话可以考虑用 groovy 处理. 比如文件操作,
-* 字符串操作
-* 
-* To Do:
-* - 考虑使用 sfl4j + logback 的日志框架, 并加入工程.
-* - 封装 jdbc 操作数据库的方式, 就像 SpringJdbcTemplate 那样.
-* - 加入 junit4 test code
-*
-*/
-//}}}
 apply plugin: 'java'
 apply plugin: 'groovy'
 apply plugin: 'application'
@@ -23,14 +8,6 @@ apply plugin: 'eclipse-wtp'
 */
 sourceCompatibility = 1.8
 version = '1.0'
-// local lib dir, 用于复制 oracle, java 驱动
-ext.localLib = '/home/codergege/nutstore/open-source'
-// 配置文件
-ext.configDir = '/home/codergege/nutstore/config'
-// 保存用到的依赖类库
-ext.workspaceLib = '/home/codergege/workspace/open-source'
-// root_project/lib
-ext.projectLib = file('lib')
 
 // from application
 // mainClassName = "cn.codergege.main.Main"
@@ -52,8 +29,14 @@ repositories {
     }
 }
 
-// define dependency version
-ext.springVersion = '4.3.3.RELEASE'
+[compileJava, compileTestJava, javadoc]*.options*.encoding = "UTF-8"  
+
+ext {//{{{
+	// define dependency version
+	springVersion = '4.3.3.RELEASE'
+	logbackVersion = '1.1.7'
+	javaResources = 'src/main/resources'
+}//}}}
 
 dependencies {//{{{
     // - 本地依赖, ojdbc6.jar
@@ -61,8 +44,9 @@ dependencies {//{{{
 
     // - 日志
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.21'
-    compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.7' 
-    compile group: 'log4j', name: 'log4j', version: '1.2.17'
+    compile group: 'ch.qos.logback', name: 'logback-classic', version: project.logbackVersion
+	compile group: 'ch.qos.logback', name: 'logback-core', version: project.logbackVersion
+	compile group: 'ch.qos.logback', name: 'logback-access', version: project.logbackVersion
 
     // - 数据库
     compile group: 'mysql', name: 'mysql-connector-java', version: '6.0.5'
@@ -75,139 +59,4 @@ dependencies {//{{{
     // 测试
     testCompile 'junit:junit:4.12'
 }//}}}
-
-/**
-* Tasts
-/
-
-//{{{
-/**
-* task: inits
-* 1) 建立 lib 目录, 构建 source sets 目录结构, 生成 cn.codergege.domain dao dao.impl, service,
-* service.impl, util, main 包结构. 
-* 2) 生成 readme.txt 文件
-* 3) 
-* todo: 
-* 1) 调用 gradle init 任务.
-* 2) readme 模板, 时间, author.
-*/
-//}}}
-task inits {//{{{
-    def libDir = 'lib'
-    def javaBase = 'src/main/java/cn/codergege'
-    // def groovyBase = 'src/main/groovy/cn/codergege/groovy'
-    ext.javaResources = 'src/main/resources'
-    def sqlDir = 'src/main/resources/sql'
-    def testBase = 'src/test/java/cn/codergege'
-    // def testGroovyBase = 'src/test/groovy/cn/codergege/groovy'
-    def testResources = 'src/test/resources'
-    def srcList = ["$libDir",
-                    "$javaBase/domain",
-                    "$javaBase/dao", 
-                    "$javaBase/dao/impl",
-                    "$javaBase/service",
-                    "$javaBase/service/impl",
-                    "$javaBase/util",
-                    "$javaBase/main",
-                    "$javaResources",
-                    "$sqlDir",
-                    "$testBase/domain",
-                    "$testBase/dao", 
-                    "$testBase/dao/impl",
-                    "$testBase/service",
-                    "$testBase/service/impl",
-                    "$testBase/util",
-                    "$testResources"];
-
-    // 1) 构建 source sets 目录
-    doLast {
-        srcList.each {
-            mkdir(it)
-        } 
-    }
-
-    // 2) 生成 readme.txt
-    doLast {
-        new File('readme.txt').write(
-"""# README
-        
-""")
-    }
-
-    // 3) 生成 Main
-    //{{{
-    /*
-    doLast {
-        new File("$javaBase/main/Main.java").write(
-"""package cn.codergege.main;
-
-public class Main {
-
-    public static void main(String[] args) {
-
-        System.out.println("Hello!");
-
-    }
-}
-""")
-   }
-   */
-    //}}}
-                    
-}//}}}
-
-/**
-* task: copyLibs
-* desc:
-*   copy project.localLib/ojdbc6.jar ... 到 lib 
-*   用于本地依赖
-*   
-*/
-task copyLib {
-    doLast {
-        copy {
-            from project.localLib
-            into project.projectLib
-            include 'ojdbc6.jar'
-            include "*mysql-connector-java*.jar"
-        }
-    }
-}
-
-/**
-* task: copySqlFile
-* desc:
-*   copy project.configDir 到 src/main/resources/sql
-*/
-task copySqlFile {
-    doLast {
-        copy {
-            from project.configDir
-            into inits.javaResources
-            include 'sql/mysql_demo.sql'
-        }
-    }
-}
-
-task copyConfig {
-    doLast {
-        copy {
-            from project.configDir + '/dbcp-connection-jdbc'
-            into inits.javaResources
-            include 'dbcp.properties'
-        }
-    }
-}
-
-/**
-* task: prepareDevEnv
-* dependsOn: copyLib
-* todo:
-* 1) copy resources from somedir
-*/
-task prepare(dependsOn:[copyLib, copySqlFile, copyConfig,  'eclipse']) {
-    doLast {
-        println "preparing development environment complete."
-    }
-}
 
