@@ -1,4 +1,4 @@
-package cn.codergege.packagename.main;
+package cn.codergege.reflect.main;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,7 +9,6 @@ public class Main {
 		log.info("Hello, world!");
 		log.debug("Hello, debug!");
 		try {
-			@SuppressWarnings("unused")
 			int i = 1/0;
 		} catch(Exception e) {
 			log.error(e.getMessage());
