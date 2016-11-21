@@ -105,6 +105,7 @@ dependencies {//{{{
     compile group: 'org.apache.poi', name: 'poi-ooxml', version: '3.15'
 
     // - util
+	compile group: 'com.google.guava', name: 'guava', version: '20.0'
     compile group: 'commons-lang', name: 'commons-lang', version: '2.6'
     compile group: 'commons-io', name: 'commons-io', version: '2.5'
 
